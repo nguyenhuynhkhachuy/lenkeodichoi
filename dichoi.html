@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chuyến đi chơi</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-blue-50 min-h-screen p-4">
+  <div class="max-w-2xl mx-auto bg-white rounded-2xl shadow-xl p-6 space-y-6">
+    <h1 class="text-2xl font-bold text-center">📅 Tạo Chuyến Đi Chơi</h1>
+
+    <div>
+      <label class="block font-semibold">Tên chuyến đi:</label>
+      <input id="tripName" type="text" class="w-full p-2 border rounded mt-1" placeholder="Ví dụ: Du lịch Đà Lạt" readonly>
+    </div>
+
+    <div>
+      <label class="block font-semibold">Ngày và giờ:</label>
+      <input id="tripDate" type="datetime-local" class="w-full p-2 border rounded mt-1" readonly>
+    </div>
+
+    <div class="flex gap-2">
+      <input id="memberName" type="text" class="flex-1 p-2 border rounded" placeholder="Tên thành viên">
+      <select id="memberStatus" class="p-2 border rounded">
+        <option value="going">Đi</option>
+        <option value="notGoing">Không đi</option>
+      </select>
+      <button onclick="addMember()" class="bg-blue-600 text-white px-4 py-2 rounded">Thêm</button>
+    </div>
+
+    <div>
+      <h2 class="text-lg font-bold mt-6">✅ Thành viên đi:</h2>
+      <ul id="goingList" class="list-disc list-inside text-green-700"></ul>
+
+      <h2 class="text-lg font-bold mt-6">❌ Thành viên không đi:</h2>
+      <ul id="notGoingList" class="list-disc list-inside text-red-700"></ul>
+    </div>
+
+    <div class="mt-6 bg-gray-100 p-4 rounded-xl">
+      <h3 class="text-md font-bold mb-2">📊 Thống kê:</h3>
+      <p id="goingCount">Người đi: 0</p>
+      <p id="notGoingCount">Người không đi: 0</p>
+    </div>
+  </div>
+
+  <script>
+    const goingList = document.getElementById('goingList');
+    const notGoingList = document.getElementById('notGoingList');
+    const goingCount = document.getElementById('goingCount');
+    const notGoingCount = document.getElementById('notGoingCount');
+
+    function updateStats() {
+      goingCount.textContent = `Người đi: ${goingList.children.length}`;
+      notGoingCount.textContent = `Người không đi: ${notGoingList.children.length}`;
+    }
+
+    function saveMembers() {
+      const going = Array.from(goingList.children).map(li => li.textContent);
+      const notGoing = Array.from(notGoingList.children).map(li => li.textContent);
+      localStorage.setItem('tripGoing', JSON.stringify(going));
+      localStorage.setItem('tripNotGoing', JSON.stringify(notGoing));
+    }
+
+    function loadMembers() {
+      const going = JSON.parse(localStorage.getItem('tripGoing') || '[]');
+      const notGoing = JSON.parse(localStorage.getItem('tripNotGoing') || '[]');
+
+      going.forEach(name => {
+        const li = document.createElement('li');
+        li.textContent = name;
+        goingList.appendChild(li);
+      });
+
+      notGoing.forEach(name => {
+        const li = document.createElement('li');
+        li.textContent = name;
+        notGoingList.appendChild(li);
+      });
+
+      updateStats();
+    }
+
+    function addMember() {
+      const name = document.getElementById('memberName').value.trim();
+      const status = document.getElementById('memberStatus').value;
+      if (!name) return;
+
+      const li = document.createElement('li');
+      li.textContent = name;
+
+      if (status === 'going') {
+        goingList.appendChild(li);
+      } else {
+        notGoingList.appendChild(li);
+      }
+
+      document.getElementById('memberName').value = '';
+      updateStats();
+      saveMembers();
+    }
+
+    // Cho phép bạn (admin) chỉnh sửa tên và ngày giờ nếu bạn nhập đúng mật khẩu
+    const isAdmin = confirm("Bạn có phải là người tạo chuyến đi không?");
+    if (isAdmin) {
+      document.getElementById('tripName').removeAttribute('readonly');
+      document.getElementById('tripDate').removeAttribute('readonly');
+    }
+
+    // Tải lại danh sách khi mở trang
+    loadMembers();
+  </script>
+</body>
+</html>
